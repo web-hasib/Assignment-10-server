@@ -12,6 +12,7 @@ app.get("/", (req, res) => {
   res.send("Hello From Recipe book server !");
 });
 
+
 // user : recipe-book
 // pass : 548fNkHoHsX4PxrZ
 
@@ -44,6 +45,14 @@ async function run() {
       res.send(result)
 
     })
+    app.get('/topRecipes', async(req,res)=>{
+      const topRecipes = await recipeCollection.find()
+      .sort({ likeCount: -1 })
+      .limit(6);
+      const recipes =await topRecipes.toArray()
+
+      res.send(recipes)
+})
     app.post("/recipes", async (req, res) => {
       const recipe = req.body;
       // console.log(recipe);
@@ -51,6 +60,18 @@ async function run() {
       const result = await recipeCollection.insertOne(recipe);
       res.send(result);
     });
+     app.put('/recipes/:id',async (req,res)=>{
+      const id =req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const option = {upsert: true};
+      const updateRecipe = req.body;
+      // console.log(updateRecipe);
+      const updatedDoc = {
+        $set: updateRecipe 
+      }
+      const result= await recipeCollection.updateOne(query,updatedDoc,option)
+      res.send(result)
+    })
     app.patch('/recipes/:id',async(req,res)=>{
       const id = req.params.id;
       const filter = {_id : new ObjectId(id)}
@@ -63,6 +84,12 @@ async function run() {
         },
       };
       const result = await recipeCollection.updateOne(filter,updateDoc,options)
+      res.send(result)
+    })
+    app.delete('/recipes/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await recipeCollection.deleteOne(query)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
