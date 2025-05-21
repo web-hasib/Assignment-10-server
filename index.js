@@ -31,6 +31,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const recipeCollection = client.db("recipeDB").collection("recipes");
+    const userCollection = client.db("recipeDB").collection("users");
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     app.get("/recipes", async (req, res) => {
@@ -92,6 +93,27 @@ async function run() {
       const result = await recipeCollection.deleteOne(query)
       res.send(result)
     })
+
+
+    //! user section
+    app.get('/users',async(req,res)=>{
+      const cursor = userCollection.find();
+      const users = await cursor.toArray();
+      res.send(users)
+    })
+    app.get('/users/:email',async(req,res)=>{
+      const email = req.params.email;
+      const query = {email : email}
+      const user = await userCollection.findOne(query)
+      res.send(user)
+    })
+    app.post('/users',async(req,res)=>{
+      const user = req.body;
+      const result = await userCollection.insertOne(user)
+      res.send(result)
+    })
+    
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
